@@ -88,6 +88,16 @@ namespace YooAsset
         ///  自定义参数：解密方法类
         /// </summary>
         public IDecryptionServices DecryptionServices { private set; get; }
+
+        /// <summary>
+        /// 自定义参数：资源清单服务类
+        /// </summary>
+        public IManifestRestoreServices ManifestServices { private set; get; }
+
+        /// <summary>
+        /// 自定义参数：拷贝内置文件服务类
+        /// </summary>
+        public ICopyLocalFileServices CopyLocalFileServices { private set; get; }
         #endregion
 
 
@@ -115,7 +125,7 @@ namespace YooAsset
         }
         public virtual FSDownloadFileOperation DownloadFileAsync(PackageBundle bundle, DownloadFileOptions options)
         {
-            // 注意：业务层的解压下载器会依赖内置文件系统的下载方法
+            // 注意：业务层的解压器会依赖该方法
             options.ImportFilePath = GetBuildinFileLoadPath(bundle);
             return _unpackFileSystem.DownloadFileAsync(bundle, options);
         }
@@ -174,6 +184,14 @@ namespace YooAsset
             {
                 DecryptionServices = (IDecryptionServices)value;
             }
+            else if (name == FileSystemParametersDefine.MANIFEST_SERVICES)
+            {
+                ManifestServices = (IManifestRestoreServices)value;
+            }
+            else if (name == FileSystemParametersDefine.COPY_LOCAL_FILE_SERVICES)
+            {
+                CopyLocalFileServices = (ICopyLocalFileServices)value;
+            }
             else
             {
                 YooLogger.Warning($"Invalid parameter : {name}");
@@ -196,6 +214,7 @@ namespace YooAsset
             _unpackFileSystem.SetParameter(FileSystemParametersDefine.INSTALL_CLEAR_MODE, InstallClearMode);
             _unpackFileSystem.SetParameter(FileSystemParametersDefine.APPEND_FILE_EXTENSION, AppendFileExtension);
             _unpackFileSystem.SetParameter(FileSystemParametersDefine.DECRYPTION_SERVICES, DecryptionServices);
+            _unpackFileSystem.SetParameter(FileSystemParametersDefine.COPY_LOCAL_FILE_SERVICES, CopyLocalFileServices);
             _unpackFileSystem.OnCreate(packageName, null);
         }
         public virtual void OnDestroy()
@@ -316,6 +335,27 @@ namespace YooAsset
 #endif
         }
 
+        /// <summary>
+        /// 是否属于解压资源包文件
+        /// </summary>
+        protected virtual bool IsUnpackBundleFile(PackageBundle bundle)
+        {
+            if (Belong(bundle) == false)
+                return false;
+
+#if UNITY_ANDROID
+            if (bundle.Encrypted)
+                return true;
+
+            if (bundle.BundleType == (int)EBuildBundleType.RawBundle)
+                return true;
+
+            return false;
+#else
+            return false;
+#endif
+        }
+
         #region 内部方法
         protected string GetDefaultBuildinPackageRoot(string packageName)
         {
@@ -349,27 +389,6 @@ namespace YooAsset
         public string GetCatalogBinaryFileLoadPath()
         {
             return PathUtility.Combine(_packageRoot, DefaultBuildinFileSystemDefine.BuildinCatalogBinaryFileName);
-        }
-
-        /// <summary>
-        /// 是否属于解压资源包文件
-        /// </summary>
-        protected bool IsUnpackBundleFile(PackageBundle bundle)
-        {
-            if (Belong(bundle) == false)
-                return false;
-
-#if UNITY_ANDROID
-            if (bundle.Encrypted)
-                return true;
-
-            if (bundle.BundleType == (int)EBuildBundleType.RawBundle)
-                return true;
-
-            return false;
-#else
-            return false;
-#endif
         }
 
         /// <summary>

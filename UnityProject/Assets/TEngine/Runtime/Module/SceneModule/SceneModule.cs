@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using UnityEngine.SceneManagement;
+using SceneHandle = YooAsset.SceneHandle;
 using YooAsset;
 
 namespace TEngine
@@ -70,6 +71,9 @@ namespace TEngine
                 }
 
                 subScene = YooAssets.LoadSceneAsync(location, sceneMode, LocalPhysicsMode.None, suspendLoad, priority);
+                
+                //Fix 这里前置，subScene.IsDone在UnSupendLoad之后才会是true
+                _subScenes.Add(location, subScene);
 
                 if (progressCallBack != null)
                 {
@@ -83,8 +87,6 @@ namespace TEngine
                 {
                     await subScene.ToUniTask();
                 }
-                
-                _subScenes.Add(location, subScene);
                 
                 _handlingScene.Remove(location);
                 
