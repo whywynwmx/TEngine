@@ -3,9 +3,12 @@ using HybridCLR.Editor;
 using HybridCLR.Editor.Commands;
 #endif
 using System.IO;
+#if ENABLE_OBFUZ
 using Obfuz.Settings;
 using Obfuz4HybridCLR;
+#endif
 using System.Collections.Generic;
+using HybridCLR.Editor.Installer;
 using TEngine.Editor;
 using UnityEditor;
 using UnityEngine;
@@ -23,8 +26,8 @@ public static class BuildDLLCommand
     public static void DisableHybridCLR()
     {
         ScriptingDefineSymbols.RemoveScriptingDefineSymbol(EnableHybridClrScriptingDefineSymbol);
-#if ENABLE_HYBRIDCLR
         HybridCLR.Editor.SettingsUtil.Enable = false;
+#if ENABLE_HYBRIDCLR
         UpdateSettingEditor.ForceUpdateAssemblies();
 #endif
     }
@@ -35,15 +38,27 @@ public static class BuildDLLCommand
     [MenuItem("HybridCLR/Define Symbols/Enable HybridCLR", false, 31)]
     public static void EnableHybridCLR()
     {
+        // 先去判断安装了没
+        var controller = new InstallerController();
+        if (!controller.HasInstalledHybridCLR())
+        {
+            controller.InstallDefaultHybridCLR();
+        }
+
+        if (!HybridCLR.Editor.SettingsUtil.Enable)
+        {
+            HybridCLR.Editor.SettingsUtil.Enable = true;
+#if ENABLE_HYBRIDCLR
+            UpdateSettingEditor.ForceUpdateAssemblies();
+#endif
+        }
         ScriptingDefineSymbols.RemoveScriptingDefineSymbol(EnableHybridClrScriptingDefineSymbol);
         ScriptingDefineSymbols.AddScriptingDefineSymbol(EnableHybridClrScriptingDefineSymbol);
-#if ENABLE_HYBRIDCLR
-        HybridCLR.Editor.SettingsUtil.Enable = true;
         UpdateSettingEditor.ForceUpdateAssemblies();
-#endif
     }
     #endregion
     
+#if ENABLE_OBFUZ
     #region Obfuz/Define Symbols
     /// <summary>
     /// 禁用Obfuz宏定义。
@@ -66,7 +81,7 @@ public static class BuildDLLCommand
         ObfuzSettings.Instance.buildPipelineSettings.enable = true;
     }
     #endregion
-    
+#endif
 
     [MenuItem("HybridCLR/Build/BuildAssets And CopyTo AssemblyTextAssetPath")]
     public static void BuildAndCopyDlls()
