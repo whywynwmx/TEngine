@@ -37,6 +37,19 @@ namespace TEngine.Editor.UI
         }
     }
 
+    [Serializable]
+    public class UIGenType
+    {
+        public UIGenType(string uiTypeName, bool isGeneric)
+        {
+            this.uiTypeName = uiTypeName;
+            this.isGeneric = isGeneric;
+        }
+
+        public string uiTypeName;
+        public bool isGeneric;
+    }
+
     [CustomPropertyDrawer(typeof(ScriptGenerateRuler))]
     public class ScriptGenerateRulerDrawer : PropertyDrawer
     {

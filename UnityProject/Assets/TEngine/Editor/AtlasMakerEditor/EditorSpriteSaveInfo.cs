@@ -15,12 +15,16 @@
         private static readonly HashSet<string> _dirtyAtlasNamesNeedCreateNew = new HashSet<string>();
         private static readonly HashSet<string> _dirtyAtlasNames = new HashSet<string>();
         private static readonly Dictionary<string, List<string>> _atlasMap = new Dictionary<string, List<string>>();
+        private static readonly Dictionary<string, string> _atlasPathMap = new Dictionary<string, string>();
         private static bool _initialized;
+        private static bool _isInScanExistingSprites;
+        private static bool _isBuildChange = false;
 
         private static AtlasConfiguration Config => AtlasConfiguration.Instance;
 
         static EditorSpriteSaveInfo()
         {
+            EditorApplication.update -= OnUpdate;
             EditorApplication.update += OnUpdate;
             Initialize();
         }
@@ -28,7 +32,6 @@
         private static void Initialize()
         {
             if (_initialized) return;
-
             ScanExistingSprites(false);
             _initialized = true;
         }
@@ -91,23 +94,47 @@
             }
         }
 
-        [MenuItem("Tools/图集工具/ForceGenerateAll")]
-        private static void ForceGenerateAll()
+        [MenuItem("Tools/图集工具/立即重新生成变动的图集数据")]
+        public static void ForceGenerateAll()
         {
+            _isBuildChange = true;
             ForceGenerateAll(false);
+            _isBuildChange = false;
         }
 
-        public static void ForceGenerateAll(bool isClearAll = false)
+        public static void ForceGenerateAll(bool isClearAll)
         {
+            _isInScanExistingSprites = true;
             if (isClearAll)
             {
+                _atlasPathMap.Clear();
                 ClearCache();
                 ClearAllAtlas();
             }
             _atlasMap.Clear();
             ScanExistingSprites();
-            _dirtyAtlasNamesNeedCreateNew.UnionWith(_atlasMap.Keys);
+
+            if (_isBuildChange)
+            {
+                foreach (var item in _atlasMap)
+                {
+                    if (GetLatestAtlasTime(item.Key) >= GetLatestSpriteTime(item.Key))
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        _dirtyAtlasNamesNeedCreateNew.Add(item.Key);
+                    }
+                }
+            }
+            else
+            {
+                _dirtyAtlasNamesNeedCreateNew.UnionWith(_atlasMap.Keys);
+            }
+
             ProcessDirtyAtlases(true);
+            _isInScanExistingSprites = false;
         }
 
         private static void ClearAllAtlas()
@@ -143,26 +170,34 @@
         {
             var currentPath = Path.GetDirectoryName(assetPath)?.Replace("\\", "/");
 
+            if(string.IsNullOrEmpty(currentPath)) return;
             var tempRootDirArr = new List<string>(Config.sourceAtlasRootDir);
             tempRootDirArr.AddRange(Config.rootChildAtlasDir);
             foreach (var rootPath in tempRootDirArr)
             {
                 var tempPath = rootPath.Replace("\\", "/").TrimEnd('/');
-                while (currentPath != null && currentPath.StartsWith(tempPath))
+                var tempCurrentPath = currentPath;
+
+                if (!tempCurrentPath.StartsWith(tempPath))
                 {
-                    var parentAtlasName = GetAtlasNameForDirectory(currentPath);
+                    continue;
+                }
+                while (tempCurrentPath != null && tempCurrentPath.StartsWith(tempPath))
+                {
+                    var parentAtlasName = GetAtlasNameForDirectory(tempCurrentPath);
 
                     if (!string.IsNullOrEmpty(parentAtlasName))
                     {
                         MarkDirty(parentAtlasName, isCreateNew);
                     }
-                    currentPath = Path.GetDirectoryName(assetPath);
+                    tempCurrentPath = Path.GetDirectoryName(tempCurrentPath)?.Replace("\\", "/");
                 }
             }
         }
 
         private static void OnUpdate()
         {
+            if (_isInScanExistingSprites) return;
             if (_dirtyAtlasNames.Count > 0 || _dirtyAtlasNamesNeedCreateNew.Count > 0)
             {
                 ProcessDirtyAtlases();
@@ -308,6 +343,10 @@
             EditorUtility.SetDirty(atlas);
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
+            if (File.Exists(outputPath))
+            {
+                _atlasPathMap[atlasName] = outputPath;
+            }
             if (Config.enableLogging)
             {
                 Debug.Log($"<b>[Generate Atlas]</b>: {atlasName} ({sprites.Count} sprites)");
@@ -469,6 +508,13 @@
 
         private static void MarkDirty(string atlasName, bool isCreateNew = false)
         {
+            if (_isBuildChange)
+            {
+                if (GetLatestAtlasTime(atlasName) > GetLatestSpriteTime(atlasName))
+                {
+                    return;
+                }
+            }
             if (isCreateNew)
             {
                 _dirtyAtlasNamesNeedCreateNew.Add(atlasName);
@@ -490,10 +536,23 @@
 
         private static DateTime GetLatestSpriteTime(string atlasName)
         {
-            return _atlasMap[atlasName]
-                .Select(p => new FileInfo(p).LastWriteTime)
-                .DefaultIfEmpty()
-                .Max();
+            if (_atlasMap.TryGetValue(atlasName, out List<string> list))
+            {
+                return list
+                    .Select(p => new FileInfo(p).LastWriteTime)
+                    .DefaultIfEmpty()
+                    .Max();
+            }
+            return DateTime.MinValue;
+        }
+
+        private static DateTime GetLatestAtlasTime(string atlasName)
+        {
+            if (_atlasPathMap.TryGetValue(atlasName, out var atlasPath))
+            {
+                return new FileInfo(atlasPath).LastWriteTime;
+            }
+            return DateTime.MinValue;
         }
 
         private static void DeleteAtlas(string path)

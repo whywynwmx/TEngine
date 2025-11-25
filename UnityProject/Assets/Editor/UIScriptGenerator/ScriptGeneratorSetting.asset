@@ -13,12 +13,17 @@ MonoBehaviour:
   m_Name: ScriptGeneratorSetting
   m_EditorClassIdentifier: 
   useBindComponent: 1
-  windowComponentSuffixName: DataComponent
-  widgetComponentSuffixName: WidgetDataComponent
-  _codePath: Assets/GameScripts/HotFix/GameLogic/UI
+  genCodePath: Assets/GameScripts/HotFix/GameLogic/UI/Gen
+  impCodePath: Assets/GameScripts/HotFix/GameLogic/UI
   _namespace: GameLogic
   _widgetName: item
   CodeStyle: 1
+  uiGenTypes:
+  - uiTypeName: UIWindow
+    isGeneric: 0
+  - uiTypeName: UIWidget
+    isGeneric: 0
+  NullableEnable: 1
   scriptGenerateRule:
   - uiElementRegex: m_go
     componentName: 0

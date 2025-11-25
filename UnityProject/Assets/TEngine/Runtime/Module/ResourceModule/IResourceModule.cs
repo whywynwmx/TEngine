@@ -69,6 +69,11 @@ namespace TEngine
         long Milliseconds { get; set; }
 
         /// <summary>
+        /// 自动释放资源引用计数为0的资源包
+        /// </summary>
+        bool AutoUnloadBundleWhenUnused { get; set; }
+
+        /// <summary>
         /// 热更链接URL。
         /// </summary>
         string HostServerURL { get; set; }

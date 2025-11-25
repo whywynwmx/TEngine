@@ -162,7 +162,6 @@ public static class UnityEditorInspectorDrawHelper
                 ScriptGenerator.GenerateUIComponentScript();
                 ScriptGenerator.GenerateCSharpScript(false);
                 Debug.Log($"{go.name}: Bind UI Component");
-                Debug.Log($"如需生成脚本请使用MenuItem里的方法");
             }
         }
     }

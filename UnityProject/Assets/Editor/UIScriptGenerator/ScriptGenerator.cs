@@ -140,7 +140,7 @@ namespace TEngine.Editor.UI
             {
                 Transform child = transform.GetChild(i);
                 WriteScript(root, child, ref strVar, ref strBind, ref strOnCreate, ref strCallback, isUniTask);
-                if (child.name.StartsWith("m_item"))
+                if (child.name.StartsWith(GetUIWidgetName()))
                 {
                     continue;
                 }

@@ -34,6 +34,11 @@ namespace TEngine
         public long Milliseconds { get; set; } = 30;
 
         /// <summary>
+        /// 自动释放资源引用计数为0的资源包
+        /// </summary>
+        public bool AutoUnloadBundleWhenUnused { get; set; } = false;
+
+        /// <summary>
         /// 获取游戏框架模块优先级。
         /// </summary>
         /// <remarks>优先级较高的模块会优先轮询，并且关闭操作会后进行。</remarks>
@@ -172,6 +177,7 @@ namespace TEngine
                 var packageRoot = buildResult.PackageRootDirectory;
                 var createParameters = new EditorSimulateModeParameters();
                 createParameters.EditorFileSystemParameters = FileSystemParameters.CreateDefaultEditorFileSystemParameters(packageRoot);
+                createParameters.AutoUnloadBundleWhenUnused = AutoUnloadBundleWhenUnused;
                 initializationOperation = package.InitializeAsync(createParameters);
             }
             
@@ -182,6 +188,7 @@ namespace TEngine
             {
                 var createParameters = new OfflinePlayModeParameters();
                 createParameters.BuildinFileSystemParameters = FileSystemParameters.CreateDefaultBuildinFileSystemParameters(decryptionServices);
+                createParameters.AutoUnloadBundleWhenUnused = AutoUnloadBundleWhenUnused;
                 initializationOperation = package.InitializeAsync(createParameters);
             }
 
@@ -194,6 +201,7 @@ namespace TEngine
                 var createParameters = new HostPlayModeParameters();
                 createParameters.BuildinFileSystemParameters = FileSystemParameters.CreateDefaultBuildinFileSystemParameters(decryptionServices);
                 createParameters.CacheFileSystemParameters = FileSystemParameters.CreateDefaultCacheFileSystemParameters(remoteServices, decryptionServices);
+                createParameters.AutoUnloadBundleWhenUnused = AutoUnloadBundleWhenUnused;
                 initializationOperation = package.InitializeAsync(createParameters);
             }
 
@@ -218,6 +226,7 @@ namespace TEngine
                 }
                 createParameters.WebServerFileSystemParameters = FileSystemParameters.CreateDefaultWebServerFileSystemParameters(webDecryptionServices);
 #endif
+                createParameters.AutoUnloadBundleWhenUnused = AutoUnloadBundleWhenUnused;
                 initializationOperation = package.InitializeAsync(createParameters);
             }
 

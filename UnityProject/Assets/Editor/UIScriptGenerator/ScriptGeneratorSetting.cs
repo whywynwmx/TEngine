@@ -32,8 +32,8 @@ namespace TEngine.Editor.UI
 
         // [FolderPath]
         // [LabelText("默认组件代码保存路径")]
-        [SerializeField]
-        private string _codePath = "Assets/GameScripts/HotFix/GameLogic/UI";
+        [SerializeField] private string genCodePath = "Assets/GameScripts/HotFix/GameLogic/UI/Gen";
+        [SerializeField] private string impCodePath = "Assets/GameScripts/HotFix/GameLogic/UI";
 
         // [LabelText("绑定代码命名空间")]
         [SerializeField]
@@ -45,13 +45,21 @@ namespace TEngine.Editor.UI
 
         public bool UseBindComponent => useBindComponent;
 
-        public string CodePath => _codePath;
+        public string GenCodePath => genCodePath;
+        public string ImpCodePath => impCodePath;
 
         public string Namespace => _namespace;
 
         public string WidgetName => _widgetName;
 
         public UIFieldCodeStyle CodeStyle = UIFieldCodeStyle.UnderscorePrefix;
+
+        [SerializeField] private List<UIGenType> uiGenTypes = new List<UIGenType>()
+        {
+            new UIGenType("UIWindow", false),
+            new UIGenType("UIWidget", false),
+        };
+        public List<UIGenType> UIGenTypes => uiGenTypes;
 
         public bool NullableEnable;
 
@@ -129,15 +137,8 @@ namespace TEngine.Editor.UI
             return Instance.CodeStyle;
         }
 
-        public static string GetCodePath()
-        {
-            if (Instance == null)
-            {
-                return string.Empty;
-            }
-
-            return Instance.CodePath;
-        }
+        public static string GetGenCodePath() => Instance?.GenCodePath;
+        public static string GetImpCodePath() => Instance?.ImpCodePath;
 
         public static string GetWidgetName()
         {
@@ -176,6 +177,25 @@ namespace TEngine.Editor.UI
                 }
             }
             return string.Empty;
+        }
+
+        public static UIGenType GetUIGenType(string uiGenTypeName)
+        {
+            if (string.IsNullOrEmpty(uiGenTypeName))
+            {
+                return null;
+            }
+            var tempList = Instance.UIGenTypes;
+            for (int i = 0; i < tempList.Count; i++)
+            {
+                var uiGenType = tempList[i];
+
+                if (string.Equals(uiGenTypeName, uiGenType.uiTypeName, StringComparison.Ordinal))
+                {
+                    return uiGenType;
+                }
+            }
+            return null;
         }
     }
 }
