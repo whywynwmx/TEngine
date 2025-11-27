@@ -30,12 +30,20 @@ namespace GameLogic
 
 		#endregion
 
+
 		#region 事件
 
 		private void OnClickLoginBtn()
-		{
-
-		}
+        {
+            Log.Info($"点击登录按钮，账号：");
+            GameModule.Net.Connect(
+                "192.168.136.130",
+                5001,
+                "ws",
+                () => { Log.Info("连接服务器成功"); },
+                () => { Log.Info("连接服务器失败"); }
+            );
+        }
 
 		#endregion
 	}

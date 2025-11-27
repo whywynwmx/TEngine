@@ -670,6 +670,7 @@ GameObject:
   - component: {fileID: 7590624233116553182}
   - component: {fileID: 7590624233116553181}
   - component: {fileID: 7590624233116553180}
+  - component: {fileID: 5837320271570093088}
   m_Layer: 5
   m_Name: LoginUI
   m_TagString: Untagged
@@ -777,6 +778,26 @@ MonoBehaviour:
   m_BlockingMask:
     serializedVersion: 2
     m_Bits: 4294967295
+--- !u!114 &5837320271570093088
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7590624233116553168}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: da5b4f8f74fed5b43b4b4c25dc3eac22, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_components:
+  - {fileID: 7590624232596026016}
+  - {fileID: 7590624231809635997}
+  genCodePath: Assets/GameScripts/HotFix/GameLogic/UI/Gen
+  className: LoginUI
+  impCodePath: Assets/GameScripts/HotFix/GameLogic/UI
+  isGenImpClass: 0
+  uiType: 
 --- !u!1 &7590624233362660643
 GameObject:
   m_ObjectHideFlags: 0
