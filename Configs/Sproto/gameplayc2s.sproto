@@ -1,0 +1,283 @@
+# 发送GM命令
+cs_sene_gm_command 100 {
+    request {
+        cmd       0 : string
+    }
+}
+
+gameplayc2s_createAvartar 101 {
+	request {		
+	}
+	response {
+		slot   			0 : integer
+		slotData	   	1 : SlotData
+		buyLv   		2 : integer
+		buyPrice   		3 : double
+	}
+}
+
+gameplayc2s_composeAvartar 102 {
+	request {
+		srcSlot 0 : integer
+		destSlot 1 : integer
+	}
+	response {
+		srcSlotData	   		0 : SlotData
+		destSlotData	   	1 : SlotData
+		rt					2 : boolean
+	}
+}
+
+gameplayc2s_work 103 {
+	request {
+		id 0 : integer
+	}
+}
+
+gameplayc2s_workReward 104 {
+	request {
+		id 0 : integer
+	}
+	response {
+		reward		0: ItemData
+	}
+}
+
+gameplayc2s_archiveGainReward 105 {
+	request {
+		lv 0 : integer
+	}
+}
+
+gameplayc2s_watchAD 106 {
+	request {
+		typ			0 : integer
+		userdata	1 : string
+	}
+	response {
+	}
+}
+
+gameplayc2s_watchEndAD 107 {
+	request {
+		giveup	0 : boolean
+	}
+	response {
+		typ			0 : integer
+	}
+}
+
+gameplayc2s_gainTaskReward 108 {
+	request {
+		id	0 : integer
+	}
+}
+
+gameplayc2s_speedup 109 {
+	request {
+		
+	}
+	response {
+	}
+}
+
+gameplayc2s_recycle 110 {
+	request {
+		slot	0 : integer
+	}
+	response {
+		count	0 : integer
+	}
+}
+
+gameplayc2s_gainGold 111 {
+	request {
+	}
+	response {
+		rt		0 : boolean
+		count	1 : integer
+		progress 2 : integer
+		cdEnd	3 : integer
+		gold	4 : integer
+	}
+}
+
+gameplayc2s_buyItem 112 {
+	request {
+		typ		0 : integer
+		id		1 : integer
+	}
+	response {
+		slot	0 : integer
+	}
+}
+
+gameplayc2s_wheel 113 {
+	request {
+	}
+	response {
+		index 	0 : integer
+		rw		1 : ItemData
+	}
+}
+
+gameplayc2s_hongbaoyu 114 {
+	request {
+	}
+	response {
+		
+	}
+}
+
+gameplayc2s_openBox 115 {
+	request {
+		slot 	0 : integer
+	}
+	response {
+		slotData	   		0 : SlotData
+		id					1 : integer
+		count				2 : double
+	}
+}
+
+gameplayc2s_box 116 {
+	request {
+	}
+
+	response {
+		count				0 : integer
+		todayBoxCount 		1 : integer
+		itemId 				2 : integer
+		itemCount 			3 : double
+	}
+}
+
+gameplayc2s_gainShareTaskReward 117 {
+	request {
+		id	0 : integer
+	}
+}
+
+gameplayc2s_shareFinish 118 {
+	request {
+		userdata	0 : string
+	}
+}
+
+gameplayc2s_gainBonusData 119 {
+	request {		
+	}
+	response {
+		todayBonus			0 : integer
+		managerCount		1 : integer
+		tempManagerCount	2 : integer
+		myProgress			3 : integer
+	}
+}
+
+gameplayc2s_gainHongBao 120 {
+	request {
+		id	0 : integer
+	}
+}
+
+gameplayc2s_cashOut 121 {
+	request {
+		id	0 : integer
+	}
+	response {
+		rt 	0 : integer
+	}
+}
+
+gameplayc2s_inputShareCode 122 {
+	request {
+		code	0 : string
+	}
+}
+
+gameplayc2s_inputPayAddr 123 {
+	request {
+		addr	0 : string
+	}
+}
+
+gameplayc2s_rankData 124 {
+	request {
+		addr	0 : string
+	}
+	response {
+		ranks 	0 : *RankData
+	}
+}
+
+gameplayc2s_gainHongBaoYu 125 {
+	request {
+		
+	}
+}
+
+gameplayc2s_composeSuperAvatar 126 {
+	request {
+		slots	0 : *integer
+	}
+	response {
+	}
+}
+
+gameplayc2s_searchName 127 {
+	request {
+		condition	0 : integer
+		value		1 : string
+	}
+	response {
+		rts			0 : *PlayerInfo
+	}
+}
+
+gameplayc2s_sendMail 128 {
+	request {
+		dbid	0 : integer
+		title	1 : string
+		content	2 : string
+		attaches 3 : *ItemData
+	}	
+	response {
+	}
+}
+
+gameplayc2s_readMail 129 {
+	request {
+		mailId		0 : integer
+		receiver	1 : integer
+	}	
+	response {
+	}
+}
+
+gameplayc2s_gainVipReward 130 {
+	request {
+		vip	0 : integer
+	}	
+	response {
+		vipRewards		0 : *integer
+	}
+}
+
+gameplayc2s_gmRecharge 131 {
+	request {
+		id	0 : string
+	}	
+}
+
+gameplayc2s_deleteMail 132 {
+	request {
+		mailId		0 : integer
+		receiver	1 : integer
+	}	
+}
+
+# 发送心跳
+cs_send_heart_beat 199 {
+    request {}
+}

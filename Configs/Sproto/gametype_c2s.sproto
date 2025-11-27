@@ -1,0 +1,87 @@
+.package {
+	type 0 : integer
+	session 1 : integer
+}
+
+#槽位信息
+.SlotData {
+	id 0 : integer
+	box 1 : boolean
+	invalidTime 2 : integer
+}
+
+#道具数据
+.ItemData {
+	id 0 : integer
+	count 1 : double
+}
+
+#道具数据（值 string）
+.ItemDataStr {
+	id 0 : integer
+	count 1 : string
+}
+
+#打工数据
+.WorkData {
+	cdTime 	0 : integer
+	count 	1 : integer
+	id		2 : integer
+	rwType  3 : integer
+	rwCount 4 : integer
+}
+
+#等级数据
+.GradeData {
+	id 					0 : integer
+	rewardState 		1 : integer
+	buyPrice			2 : double
+	diamondBuyPrice		3 : integer
+}
+
+#任务数据
+.TaskData {
+	id 				0 : integer
+	progress	 	1 : integer
+	status			2 : integer
+}
+
+#提现记录
+.CashData {
+	id 				0 : integer
+	time		 	1 : integer
+}
+
+#排行榜数据
+.RankData {
+	dbid			0 : integer	
+	name			1 : string
+	value			2 : double
+}
+
+#玩家数据
+.PlayerInfo {
+	dbid			0 : integer
+	name			1 : string
+}
+
+#邮件
+.MailData {
+	dbid			0 : integer
+	sender			1 : integer
+	receiver		2 : integer
+	senderName		3 : string
+	receiverName	4 : string
+	title			5 : string
+	content			6 : string
+	attaches		7 : *ItemData
+	time			8 : integer
+	read			9 : integer
+}
+
+#游戏坐标
+.Pos {
+	x			0 : integer
+	y 			1 : integer
+}
+

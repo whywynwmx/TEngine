@@ -1,0 +1,51 @@
+.room_member_info {
+    dbid         0 : integer
+    name         1 : string
+    head         2 : string
+    ready        3 : boolean
+}
+
+sc_room_enter 300 {
+    request {
+        roomid              0 : integer
+        count               1 : integer     # 玩家人数
+        cost                2 : integer     # 房间费用
+        owner               3 : integer     # 房主
+        players             4 : *room_member_info
+    }
+}
+
+sc_room_otherplayer_enter 301 {
+    request {
+        roomid          0 : integer
+        player          1 : room_member_info  
+    }
+}
+
+sc_room_player_leave 302 {
+    request {
+        roomid      0 : integer
+        dbid        1 : integer
+        owner       2 : integer
+        reason      3 : integer
+    }
+}
+
+sc_room_ready 303 {
+    request {
+        dbid        0 : integer
+        ready       1 : boolean
+    }
+}
+
+sc_room_match_ret 304 {
+    request {
+        ret        0 : integer
+    }
+}
+
+sc_room_match_cancel_ret 305 {
+    request {
+        ret        0 : integer
+    }
+}

@@ -1,0 +1,96 @@
+#获取房间列表
+cs_room_list 300 {
+    request {
+    }
+}
+
+#创建房间
+cs_room_create 301 {
+    request {
+        count         0 : integer     # 玩家人数
+        cost          1 : integer     # 房间费用
+        enter_cond    2 : integer     # 进入条件
+    }  
+}
+
+#进入房间
+cs_room_enter 302 {
+    request {
+        roomid       0 : integer
+    }
+    response {
+        ret          0 : integer
+    }
+}
+
+#退出房间
+cs_room_exit 303 {
+    request {
+        roomid       0 : integer
+    }
+    response {
+        ret          0 : integer
+    }
+}
+
+#自动匹配
+cs_room_match 304 {
+    request {
+        count         0 : *integer     # 玩家人数
+        cost          1 : integer     # 房间费用
+    }
+    response {
+        ret          0 : integer
+    }
+}
+
+#准备
+cs_room_ready 305 {
+    request {
+        ready       0 : boolean
+    }
+    response {
+        ret          0 : integer
+    }
+}
+
+#开始游戏
+cs_room_start 306 {
+    request {
+
+    }
+    response {
+        ret          0 : integer
+    }
+}
+
+#取消匹配
+cs_room_cancelmatch 307 {
+    request {
+
+    }
+    response {
+        ret          0 : integer
+    }
+}
+
+#踢人
+cs_room_kick 308 {
+    request {
+        dbid         0 : integer 
+    }
+    response {
+        ret          0 : integer
+    }
+}
+
+#踢人
+cs_room_reenter 309 {
+    request {
+        roomid       0 : integer
+    }
+    response {
+        ret          0 : integer
+    }
+}
+

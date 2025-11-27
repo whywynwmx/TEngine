@@ -16,3 +16,10 @@ UnityProject/ProjectSettings/BurstAotSettings_StandaloneWindows.json
 /Tools/GameEventSourceGenerator/SourceGenerator/obj
 /Windows
 /Android
+/UnityProject/.vsconfig
+/log.txt
+/UnityProject/UserSettings/Layouts/default-2022.dwlt
+/UnityProject/UserSettings/Search.index
+/BuildCLI/build.log
+/UnityProject/Assets/AssetRaw/DLL
+/UnityProject/Assets/AssetRaw/Configs/bytes

@@ -1,0 +1,70 @@
+.club_memberinfo {
+    dbid        0 : integer
+    name        1 : string
+    office      2 : integer
+    head        3 : string
+    online      4 : boolean
+}
+
+.club_simpleinfo {
+    dbid        0 : integer
+    name        1 : string
+    leader      2 : club_memberinfo
+}
+
+.club_applyinfo {
+    dbid        0 : integer
+    name        1 : string
+    head        2 : string
+}
+
+sc_club_infolist 500 {
+    request {
+        clubs       0 : *club_simpleinfo
+    }
+}
+
+sc_club_join 501 {
+    request {
+        clubid      0 : integer
+        info        1 : club_simpleinfo
+    }
+}
+
+sc_club_member_list 502 {
+    request {
+        clubid      0 : integer
+        members     1 : *club_memberinfo
+    }
+}
+
+sc_club_apply_list 503 {
+    request {
+        clubid      0 : integer
+        applys      1 : *club_applyinfo
+    }
+}
+
+sc_club_quit 504 {
+    request {
+        clubid      0 : integer
+    }
+}
+
+sc_club_newapply 505 {
+    request {
+        clubid      0 : integer
+    }
+}
+
+sc_club_create_ret 506 {
+    request {
+        ret        0 : integer  
+    }
+}
+
+sc_club_apply_ret 507 {
+    request {
+        ret        0 : integer  
+    }
+}

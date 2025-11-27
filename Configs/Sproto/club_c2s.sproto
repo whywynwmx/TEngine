@@ -1,0 +1,38 @@
+# 创建俱乐部
+cs_club_create 500 {
+    request {
+        name       0: string
+    }
+}
+
+cs_club_join 501 {
+    request {
+        clubid      0: integer
+    }
+}
+
+cs_club_quit 502 {
+    request {
+        clubid      0: integer
+    }
+}
+
+cs_club_process_apply 503 {
+    request {
+        clubid        0: integer
+        targetid      1: integer
+        result        2: boolean
+    }
+}
+
+cs_club_require_members 504 {
+    request {
+        clubid        0: integer
+    }
+}
+
+cs_club_require_apply_list 505 {
+    request {
+        clubid        0: integer
+    }
+}

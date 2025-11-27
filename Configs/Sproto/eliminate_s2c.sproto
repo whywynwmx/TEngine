@@ -1,0 +1,173 @@
+.eliminate_member_info {
+    dbid         0 : integer
+    name         1 : string
+    head         2 : string
+    score        3 : integer
+    skillcount   4 : *integer
+    quit         5 : boolean
+}
+
+.Eliminate_Tile {
+    tile         0 : integer
+    bomb         1 : integer
+}
+
+.Eliminate_PairTile {
+    x       0 : integer
+    y       1 : integer
+    tile    2 : integer
+    multi   3 : boolean
+}
+
+.Eliminate_Pair {
+    pos         0 : *Eliminate_PairTile
+    bomb        1 : integer
+    bombpos     2 : Pos
+    batch       3 : integer
+    addop       4 : boolean  
+    newbombpos  5 : Pos
+    newbomb     6 : integer
+}
+
+.Eliminate_NewBombs {
+    frompos     0 : Pos
+    topos       1 : Pos
+}
+
+.Eliminate_Step {
+    pair            0 : *Eliminate_Pair    #消除的棋子
+    map             1 : *Eliminate_Tile   #新地图
+    newbombs        2 : *Eliminate_NewBombs
+    score           3 : integer
+    add_score       4 : integer
+    dead            5 : boolean
+    addopIdx        6 : integer
+}
+
+sc_eliminate_map_info 400 {
+    request {
+        map           0 : *Eliminate_Tile
+        reward        1 : integer
+        members       2 : *eliminate_member_info
+        roomid        3 : integer
+    }
+}
+
+sc_eliminate_round_info 401 {
+    request {
+        round           0 : integer
+        playeridx       1 : integer
+        time            2 : integer
+        opCount         3 : integer 
+        matchPlayers     4 : *integer
+    }
+}
+
+sc_eliminate_op_step 402 {
+    request {
+        p1              0 : Pos
+        p2              1 : Pos
+        step            2 : *Eliminate_Step
+        dbid            3 : integer
+        opCount         4 : integer
+        roundTime       7 : integer
+        changeOpCount   8 : integer
+        crossbomb       9 : boolean
+    }
+}
+
+
+sc_eliminate_op_ret 404 {
+    request {
+        p1              0 : Pos
+        p2              1 : Pos
+        ret             2 : integer
+    }
+}
+
+sc_eliminate_map_start 405 {
+    request {
+        map           0 : *Eliminate_Tile
+        reward        1 : integer
+        members       2 : *eliminate_member_info
+        round           3 : integer
+        playeridx       4 : integer
+        time            5 : integer
+        opCount         6 : integer 
+        practice        7 : boolean
+    }
+}
+
+.eliminate_result_player {
+    dbid         0 : integer
+    name         1 : string
+    head         2 : string
+    score        3 : integer
+    leave        4 : boolean
+}
+sc_eliminate_finish 406 {
+    request {
+        roomid      0 : integer
+        winner      1 : integer
+        reward      2 : integer
+        result      3 : *eliminate_result_player
+        fee         4 : integer
+    }
+}
+
+sc_eliminate_useskill_ret 407 {
+    request {
+        ret             0 : integer
+    }
+}
+
+sc_eliminate_useskill_step 408 {
+    request {
+        pos             0 : Pos
+        skillid         1 : integer
+        step            2 : *Eliminate_Step
+        dbid            3 : integer
+        opCount         4 : integer
+        skillcount      5 : *integer
+        map             6 : *Eliminate_Tile
+        roundTime       7 : integer
+    }
+}
+
+sc_eliminate_reconnect 409 {
+    request {
+        roomid             0 : integer
+    }
+}
+
+sc_eliminate_game_reconnected 410 {
+    request {
+        map           0 : *Eliminate_Tile
+        reward        1 : integer
+        members       2 : *eliminate_member_info
+        roomid        3 : integer
+        round           4 : integer
+        playeridx       5 : integer
+        time            6 : integer
+        opCount         7 : integer 
+        matchPlayers     8 : *integer
+    }
+}
+
+sc_eliminate_otherplayerExit 411 {
+    request {
+        roomid             0 : integer
+        dbid               1 : integer
+        playeridx          2 : integer
+        matchPlayers       3 : *integer
+        round           4 : integer
+        time            5 : integer
+        opCount         6 : integer 
+    }
+}
+
+sc_eliminate_playerExit 412 {
+    request {
+        roomid             0 : integer
+    }
+}

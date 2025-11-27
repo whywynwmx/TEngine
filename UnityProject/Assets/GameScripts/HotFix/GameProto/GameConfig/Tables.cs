@@ -13,18 +13,46 @@ namespace GameConfig
 {
 public partial class Tables
 {
-    public item.TbItem TbItem {get; }
+    #region The Tables
+
+    private item.TbItem m_TbItem;
+    public item.TbItem TbItem 
+    {
+        get
+        {
+            if (m_TbItem == null)
+            {
+                m_TbItem = new item.TbItem(defaultLoader("item_tbitem"));
+                m_TbItem.ResolveRef(this);
+            }
+            return m_TbItem;
+        }
+        set
+        {
+            m_TbItem = value;
+            m_TbItem.ResolveRef(this);
+        }
+    }
+
+    #endregion
+
+    System.Func<string, ByteBuf> defaultLoader;
 
     public Tables(System.Func<string, ByteBuf> loader)
     {
-        TbItem = new item.TbItem(loader("item_tbitem"));
-        ResolveRef();
+        SetDefaultLoader(loader);
+        Init();
     }
     
-    private void ResolveRef()
+    public void SetDefaultLoader(System.Func<string, ByteBuf> loader)
     {
-        TbItem.ResolveRef(this);
+        defaultLoader = null;
+        defaultLoader = loader;
     }
+
+    //public partial void Init();
+
+    public void Init(){}
 }
 
 }

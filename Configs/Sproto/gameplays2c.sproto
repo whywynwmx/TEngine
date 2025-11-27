@@ -1,0 +1,191 @@
+gameplays2c_syncData 101 {
+	request {		
+		slots 		0 : *SlotData
+		buyLv		1 : integer
+		level		2 : integer
+		dbid		3 : integer
+		name		4 : string
+		gainGoldCount 5 : integer
+		gainGoldProgress 6 : integer
+		gainGoldCdEndTime 7 : integer
+		diamondSpeedUpCount 8 : integer
+		loginReward 		9 : ItemData
+		loginGained		10 : boolean
+		boxCount		11 : integer
+		todayBoxCount		12 : integer
+		shareCode		13 : string
+		invatedShareCode   14 : string
+		payaddr			15 : string
+		vip				16 : integer
+		cashOutMoney	17 : double
+		hongbaoyuCount	18 : integer
+		recharge		19 : double
+		vipRewards		20 : *integer
+	}
+}
+
+# 处理道具变化
+gameplays2c_itemChange 102 {
+    request {
+        type    0 : integer
+        value   1 : string
+		change	2 : double
+		logType	3 : integer
+    }
+}
+
+# 通知在线收益
+gameplays2c_slotReward 103 {
+    request {
+        slot    0 : integer
+        id	   	1 : integer
+		count  	2 : integer
+    }
+}
+
+# 通知最高等级提升
+gameplays2c_levelUp 104 {
+    request {
+        name    0 : string
+        level   1 : integer
+		dbid 	2 : integer
+		gradeId 3 : integer # 获得哪个货币 导致等级提升（因为货币 37、38、39、40、41 在 ClassRoleConfig 配置中 rank 字段都是 37，玩家升到 37 级时，客户端无法判断是哪个货币导致的等级提升）
+    }
+}
+
+# 同步背包数据
+gameplays2c_bagInfo 105 {
+    request {
+        list    0 : *ItemDataStr
+    }
+}
+
+# 同步打工数据
+gameplays2c_workInfo 106 {
+    request {
+        workId    		0 : integer
+		workEndTime    	1 : integer
+		workDatas    	2 : *WorkData
+    }
+}
+
+# 同步等级数据
+gameplays2c_gradeInfo 107 {
+    request {
+        grades    		0 : *GradeData
+    }
+}
+
+# 同步任务数据
+gameplays2c_taskInfo 108 {
+    request {
+        tasks    		0 : *TaskData
+    }
+}
+
+# 同步加速数据
+gameplays2c_speedupInfo 109 {
+    request {
+        time    				0 : integer
+		diamondSpeedUpCount		1 : integer
+    }
+}
+
+# 同步槽位数据
+gameplays2c_slotData 110 {
+    request {        
+		slots 		0 : *SlotData
+    }
+}
+
+# 同步离线数据
+gameplays2c_offline 111 {
+    request {        
+		rewards 		0 : *ItemData
+    }
+}
+
+# 通知观看离线红包2
+gameplays2c_offlineAd 112 {
+    request {        
+		value 		0 : integer
+    }
+}
+
+# 通知登录奖励状态
+gameplays2c_loginRewardState 113 {
+    request {        
+		loginGained 		0 : boolean
+    }
+}
+
+# 同步分享任务数据
+gameplays2c_shareTaskInfo 114 {
+    request {
+        tasks    		0 : *TaskData
+    }
+}
+
+# 通知幸运轮盘数据
+gameplays2c_wheelData 115 {
+    request {        
+		count 				0 : integer
+		nextRestoreTime		1 : integer
+		adCount				2 : integer
+    }
+}
+
+# 通知提现信息和红包信息
+gameplays2c_cashData 116 {
+    request {        
+		records					0 : *CashData
+		hongbaos				1 : *integer
+		hongbaoCdTime			2 : integer
+		hongbaoReduceCdTime		3 : integer
+    }
+}
+
+# 通知道具不足
+gameplays2c_notifyItemLimit 117 {
+    request {        
+		id					0 : integer
+    }
+}
+
+
+# 通知观看广告
+gameplays2c_notifyWatchAd 118 {
+    request {        
+		adType					0 : integer
+    }
+}
+
+# 同步新手引导数据
+gameplays2c_tutorials 119 {
+    request {
+        tutorials    		0 : *integer
+    }
+}
+
+# 同步完成新手引导
+gameplays2c_finishTutorial 120 {
+    request {
+        step    		0 : integer
+    }
+}
+
+# 通知新邮件
+gameplays2c_notifyNewMail 121 {
+    request {
+        mail    		0 : MailData
+		recv			1 : boolean
+    }
+}
+
+# 同步邮件
+gameplays2c_notifyAllMail 122 {
+    request {
+        recvMails    		0 : *MailData
+		sendMails    		1 : *MailData
+    }
+}

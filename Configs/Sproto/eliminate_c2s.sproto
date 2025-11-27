@@ -1,0 +1,39 @@
+#交换操作
+cs_eliminate_switch 400 {
+    request {
+        p1      0: Pos
+        p2      1: Pos
+        practice 2: boolean
+    }
+}
+
+#使用道具
+cs_eliminate_use_skill 401 {
+    request {
+        id          0 : integer
+        pos         1 : Pos
+        practice    2 : boolean
+    }
+}
+
+# 重新连接进入
+cs_eliminate_reconnect 402 {
+    request {
+        roomid             0 : integer
+    }
+}
+
+# 退出房间
+cs_eliminate_exit 403 {
+    request {
+        roomid             0 : integer
+        practice            1 : boolean
+    }
+}
+
+# 练习
+cs_eliminate_practice 404 {
+    request {
+
+    }
+}
