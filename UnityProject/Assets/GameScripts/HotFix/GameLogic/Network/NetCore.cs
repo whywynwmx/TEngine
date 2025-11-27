@@ -1,23 +1,25 @@
 using System;
 using System.IO;
 using System.Threading;
-using System.Net.Sockets;
+using System.Net.WebSockets;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Sproto;
 using SprotoType;
 using UnityEngine;
 
 public delegate void SocketConnected();
+public delegate void SocketConnectFailed();
 
 public class NetCore
 {
-    private static Socket socket;
+    private static ClientWebSocket webSocket;
 
     public static bool logined;
     public static bool enabled;
 
     private static int CONNECT_TIMEOUT = 3000;
-    private static ManualResetEvent TimeoutObject;
+    private static CancellationTokenSource cancellationTokenSource;
 
     private static Queue<byte[]> recvQueue = new Queue<byte[]>();
 
@@ -31,50 +33,55 @@ public class NetCore
     public static ProtocolFunctionDictionary protocol = new ProtocolFunctionDictionary();
     private static Dictionary<long, ProtocolFunctionDictionary.typeFunc> sessionDict;
 
-    private static AsyncCallback connectCallback = new AsyncCallback(Connected);
-    private static AsyncCallback receiveCallback = new AsyncCallback(Receive);
+    private static byte[] receiveBuffer = new byte[1 << 16];
 
     public static void Init()
     {
-        byte[] receiveBuffer = new byte[1 << 16];
         recvStream.Write(receiveBuffer, 0, receiveBuffer.Length);
         recvStream.Seek(0, SeekOrigin.Begin);
 
         sessionDict = new Dictionary<long, ProtocolFunctionDictionary.typeFunc>();
     }
 
-    public static void Connect(string host, int port, SocketConnected socketConnected)
+    public static async void Connect(string host, int port, string protocol = "ws", SocketConnected socketConnected = null, SocketConnectFailed socketConnectFailed = null)
     {
         Disconnect();
 
-        socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-        socket.BeginConnect(host, port, connectCallback, socket);
-
-        TimeoutObject = new ManualResetEvent(false);
-        TimeoutObject.Reset();
-
-        if (TimeoutObject.WaitOne(CONNECT_TIMEOUT, false))
+        try
         {
-            Receive();
-            socketConnected();
-        }
-        else
-        {
-            Debug.Log("Connect Timeout");
-        }
-    }
+            webSocket = new ClientWebSocket();
+            cancellationTokenSource = new CancellationTokenSource();
+            cancellationTokenSource.CancelAfter(CONNECT_TIMEOUT);
 
-    private static void Connected(IAsyncResult ar)
-    {
-        socket.EndConnect(ar);
-        TimeoutObject.Set();
+            string uri = $"{protocol}://{host}:{port}";
+            await webSocket.ConnectAsync(new Uri(uri), cancellationTokenSource.Token);
+
+            if (webSocket.State == WebSocketState.Open)
+            {
+                Receive();
+                socketConnected();
+            }
+            else
+            {
+                Debug.Log("WebSocket connection failed");
+                socketConnectFailed();
+            }
+        }
+        catch (Exception e)
+        {
+            Debug.Log($"Connect Timeout or Error: {e.Message}");
+            socketConnectFailed();
+        }
     }
 
     public static void Disconnect()
     {
         if (connected)
         {
-            socket.Close();
+            cancellationTokenSource?.Cancel();
+            webSocket?.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing", CancellationToken.None);
+            webSocket?.Dispose();
+            webSocket = null;
         }
     }
 
@@ -82,7 +89,7 @@ public class NetCore
     {
         get
         {
-            return socket != null && socket.Connected;
+            return webSocket != null && webSocket.State == WebSocketState.Open;
         }
     }
 
@@ -128,7 +135,9 @@ public class NetCore
         sendStream.Write(data, 0, data.Length);
 
         try {
-            socket.Send(sendStream.Buffer, sendStream.Position, SocketFlags.None);
+            var dataToSend = new byte[sendStream.Position];
+            Array.Copy(sendStream.Buffer, dataToSend, sendStream.Position);
+            webSocket.SendAsync(new ArraySegment<byte>(dataToSend), WebSocketMessageType.Binary, true, cancellationTokenSource.Token);
         }
         catch (Exception e) {
             Debug.LogWarning(e.ToString());
@@ -136,61 +145,80 @@ public class NetCore
     }
 
     private static int receivePosition;
-    public static void Receive(IAsyncResult ar = null)
+    public static async void Receive()
     {
         if (!connected)
         {
             return;
         }
 
-        if (ar != null)
+        try
         {
-            try {
-                receivePosition += socket.EndReceive(ar);
-            }
-            catch (Exception e) {
-                Debug.LogWarning(e.ToString());
-            }
-        }
-
-        int i = recvStream.Position;
-        while (receivePosition >= i + 2)
-        {
-            int length = (recvStream[i] << 8) | recvStream[i+1];
-
-            int sz = length + 2;
-            if (receivePosition < i + sz)
+            while (connected && !cancellationTokenSource.Token.IsCancellationRequested)
             {
-                break;
+                var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(receiveBuffer), cancellationTokenSource.Token);
+
+                if (result.MessageType == WebSocketMessageType.Binary && result.Count > 0)
+                {
+                    ProcessReceivedData(receiveBuffer, result.Count);
+                }
+                else if (result.MessageType == WebSocketMessageType.Close)
+                {
+                    Disconnect();
+                    break;
+                }
             }
-
-            recvStream.Seek(2, SeekOrigin.Current);
-
-            if (length > 0)
-            {
-                byte[] data = new byte[length];
-                recvStream.Read(data, 0, length);
-                recvQueue.Enqueue(data);
-            }
-
-            i += sz;
         }
-
-        if (receivePosition == recvStream.Buffer.Length)
+        catch (Exception e)
         {
-            recvStream.Seek(0, SeekOrigin.End);
-            recvStream.MoveUp(i, i);
-            receivePosition = recvStream.Position;
-            recvStream.Seek(0, SeekOrigin.Begin);
+            Debug.LogWarning($"Receive error: {e.ToString()}");
         }
+    }
 
-        try {
-            socket.BeginReceive(recvStream.Buffer, receivePosition,
-                recvStream.Buffer.Length - receivePosition,
-                SocketFlags.None, receiveCallback, socket);
-        }
-        catch (Exception e) {
-            Debug.LogWarning(e.ToString());
+    private static void ProcessReceivedData(byte[] buffer, int count)
+    {
+        int bufferPos = 0;
+
+        while (bufferPos < count)
+        {
+            int copyLength = Math.Min(count - bufferPos, recvStream.Buffer.Length - receivePosition);
+            if (copyLength > 0)
+            {
+                recvStream.Seek(receivePosition, SeekOrigin.Begin);
+                recvStream.Write(buffer, bufferPos, copyLength);
+                receivePosition += copyLength;
+                bufferPos += copyLength;
+            }
+
+            int i = 0;
+            while (receivePosition >= i + 2)
+            {
+                int length = (recvStream[i] << 8) | recvStream[i+1];
+
+                int sz = length + 2;
+                if (receivePosition < i + sz)
+                {
+                    break;
+                }
+
+                recvStream.Seek(i + 2, SeekOrigin.Begin);
+
+                if (length > 0)
+                {
+                    byte[] data = new byte[length];
+                    recvStream.Read(data, 0, length);
+                    recvQueue.Enqueue(data);
+                }
+
+                i += sz;
+            }
+
+            if (i > 0)
+            {
+                recvStream.Seek(0, SeekOrigin.Begin);
+                recvStream.MoveUp(i, receivePosition - i);
+                receivePosition -= i;
+            }
         }
     }
 
