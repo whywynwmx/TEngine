@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Net.WebSockets;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Sproto;
@@ -21,7 +22,7 @@ public class NetCore
     private static int CONNECT_TIMEOUT = 3000;
     private static CancellationTokenSource cancellationTokenSource;
 
-    private static Queue<byte[]> recvQueue = new Queue<byte[]>();
+    private static ConcurrentQueue<byte[]> recvQueue = new ConcurrentQueue<byte[]>();
 
     private static SprotoPack sendPack = new SprotoPack();
     private static SprotoPack recvPack = new SprotoPack();
@@ -177,50 +178,47 @@ public class NetCore
 
     private static void ProcessReceivedData(byte[] buffer, int count)
     {
-        lock (recvQueue)
+        int bufferPos = 0;
+
+        while (bufferPos < count)
         {
-            int bufferPos = 0;
-
-            while (bufferPos < count)
+            int copyLength = Math.Min(count - bufferPos, recvStream.Buffer.Length - receivePosition);
+            if (copyLength > 0)
             {
-                int copyLength = Math.Min(count - bufferPos, recvStream.Buffer.Length - receivePosition);
-                if (copyLength > 0)
+                recvStream.Seek(receivePosition, SeekOrigin.Begin);
+                recvStream.Write(buffer, bufferPos, copyLength);
+                receivePosition += copyLength;
+                bufferPos += copyLength;
+            }
+
+            int i = 0;
+            while (receivePosition >= i + 2)
+            {
+                int length = (recvStream[i] << 8) | recvStream[i+1];
+
+                int sz = length + 2;
+                if (receivePosition < i + sz)
                 {
-                    recvStream.Seek(receivePosition, SeekOrigin.Begin);
-                    recvStream.Write(buffer, bufferPos, copyLength);
-                    receivePosition += copyLength;
-                    bufferPos += copyLength;
+                    break;
                 }
 
-                int i = 0;
-                while (receivePosition >= i + 2)
+                recvStream.Seek(i + 2, SeekOrigin.Begin);
+
+                if (length > 0)
                 {
-                    int length = (recvStream[i] << 8) | recvStream[i+1];
-
-                    int sz = length + 2;
-                    if (receivePosition < i + sz)
-                    {
-                        break;
-                    }
-
-                    recvStream.Seek(i + 2, SeekOrigin.Begin);
-
-                    if (length > 0)
-                    {
-                        byte[] data = new byte[length];
-                        recvStream.Read(data, 0, length);
-                        recvQueue.Enqueue(data);
-                    }
-
-                    i += sz;
+                    byte[] data = new byte[length];
+                    recvStream.Read(data, 0, length);
+                    recvQueue.Enqueue(data);  // 无锁操作
                 }
 
-                if (i > 0)
-                {
-                    recvStream.Seek(0, SeekOrigin.Begin);
-                    recvStream.MoveUp(i, receivePosition - i);
-                    receivePosition -= i;
-                }
+                i += sz;
+            }
+
+            if (i > 0)
+            {
+                recvStream.Seek(0, SeekOrigin.Begin);
+                recvStream.MoveUp(i, receivePosition - i);
+                receivePosition -= i;
             }
         }
     }
@@ -228,22 +226,9 @@ public class NetCore
     public static void Dispatch()
     {
         Package pkg = new Package();
-        List<byte[]> messagesToProcess = new List<byte[]>();
+        int processedCount = 0;
 
-        lock (recvQueue)
-        {
-            if (recvQueue.Count > 20)
-            {
-                Debug.Log("recvQueue.Count: " + recvQueue.Count);
-            }
-
-            while (recvQueue.Count > 0)
-            {
-                messagesToProcess.Add(recvQueue.Dequeue());
-            }
-        }
-
-        foreach (byte[] data in messagesToProcess)
+        while (recvQueue.TryDequeue(out byte[] data))
         {
             byte[] unpackedData = recvPack.unpack(data);
             int offset = pkg.init(unpackedData);
@@ -273,6 +258,13 @@ public class NetCore
                     rpcRspHandler(GenResponse(unpackedData, offset));
                 }
             }
+
+            processedCount++;
+        }
+
+        if (processedCount > 20)
+        {
+            Debug.Log($"Processed {processedCount} messages");
         }
     }
 
