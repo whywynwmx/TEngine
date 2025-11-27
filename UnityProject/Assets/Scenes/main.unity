@@ -270,8 +270,29 @@ PrefabInstance:
       propertyPath: m_Name
       value: UIRoot
       objectReference: {fileID: 0}
+    - target: {fileID: 2425705316150093153, guid: 4f5fbbbb040049d41a5f897d5a956bf6, type: 3}
+      propertyPath: m_ReferenceResolution.x
+      value: 750
+      objectReference: {fileID: 0}
+    - target: {fileID: 2425705316150093153, guid: 4f5fbbbb040049d41a5f897d5a956bf6, type: 3}
+      propertyPath: m_ReferenceResolution.y
+      value: 1334
+      objectReference: {fileID: 0}
+    - target: {fileID: 9128635737618866060, guid: 4f5fbbbb040049d41a5f897d5a956bf6, type: 3}
+      propertyPath: m_UiScaleMode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 9128635737618866060, guid: 4f5fbbbb040049d41a5f897d5a956bf6, type: 3}
+      propertyPath: m_ReferenceResolution.x
+      value: 750
+      objectReference: {fileID: 0}
+    - target: {fileID: 9128635737618866060, guid: 4f5fbbbb040049d41a5f897d5a956bf6, type: 3}
+      propertyPath: m_ReferenceResolution.y
+      value: 1334
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
-    m_RemovedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: 2654932191727576646, guid: 4f5fbbbb040049d41a5f897d5a956bf6, type: 3}
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 4f5fbbbb040049d41a5f897d5a956bf6, type: 3}
