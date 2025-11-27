@@ -1,0 +1,4 @@
+{
+	"out_dir": "../../UnityProject/Assets/GameScripts/HotFix/GameProto/Sproto",
+	"in_dir": "../../Configs/Sproto"
+}
