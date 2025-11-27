@@ -177,47 +177,50 @@ public class NetCore
 
     private static void ProcessReceivedData(byte[] buffer, int count)
     {
-        int bufferPos = 0;
-
-        while (bufferPos < count)
+        lock (recvQueue)
         {
-            int copyLength = Math.Min(count - bufferPos, recvStream.Buffer.Length - receivePosition);
-            if (copyLength > 0)
-            {
-                recvStream.Seek(receivePosition, SeekOrigin.Begin);
-                recvStream.Write(buffer, bufferPos, copyLength);
-                receivePosition += copyLength;
-                bufferPos += copyLength;
-            }
+            int bufferPos = 0;
 
-            int i = 0;
-            while (receivePosition >= i + 2)
+            while (bufferPos < count)
             {
-                int length = (recvStream[i] << 8) | recvStream[i+1];
-
-                int sz = length + 2;
-                if (receivePosition < i + sz)
+                int copyLength = Math.Min(count - bufferPos, recvStream.Buffer.Length - receivePosition);
+                if (copyLength > 0)
                 {
-                    break;
+                    recvStream.Seek(receivePosition, SeekOrigin.Begin);
+                    recvStream.Write(buffer, bufferPos, copyLength);
+                    receivePosition += copyLength;
+                    bufferPos += copyLength;
                 }
 
-                recvStream.Seek(i + 2, SeekOrigin.Begin);
-
-                if (length > 0)
+                int i = 0;
+                while (receivePosition >= i + 2)
                 {
-                    byte[] data = new byte[length];
-                    recvStream.Read(data, 0, length);
-                    recvQueue.Enqueue(data);
+                    int length = (recvStream[i] << 8) | recvStream[i+1];
+
+                    int sz = length + 2;
+                    if (receivePosition < i + sz)
+                    {
+                        break;
+                    }
+
+                    recvStream.Seek(i + 2, SeekOrigin.Begin);
+
+                    if (length > 0)
+                    {
+                        byte[] data = new byte[length];
+                        recvStream.Read(data, 0, length);
+                        recvQueue.Enqueue(data);
+                    }
+
+                    i += sz;
                 }
 
-                i += sz;
-            }
-
-            if (i > 0)
-            {
-                recvStream.Seek(0, SeekOrigin.Begin);
-                recvStream.MoveUp(i, receivePosition - i);
-                receivePosition -= i;
+                if (i > 0)
+                {
+                    recvStream.Seek(0, SeekOrigin.Begin);
+                    recvStream.MoveUp(i, receivePosition - i);
+                    receivePosition -= i;
+                }
             }
         }
     }
@@ -225,16 +228,25 @@ public class NetCore
     public static void Dispatch()
     {
         Package pkg = new Package();
+        List<byte[]> messagesToProcess = new List<byte[]>();
 
-        if (recvQueue.Count > 20)
+        lock (recvQueue)
         {
-            Debug.Log("recvQueue.Count: " + recvQueue.Count);
+            if (recvQueue.Count > 20)
+            {
+                Debug.Log("recvQueue.Count: " + recvQueue.Count);
+            }
+
+            while (recvQueue.Count > 0)
+            {
+                messagesToProcess.Add(recvQueue.Dequeue());
+            }
         }
 
-        while (recvQueue.Count > 0)
+        foreach (byte[] data in messagesToProcess)
         {
-            byte[] data = recvPack.unpack(recvQueue.Dequeue());
-            int offset = pkg.init(data);
+            byte[] unpackedData = recvPack.unpack(data);
+            int offset = pkg.init(unpackedData);
 
             int tag = (int)pkg.type;
             long session = (long)pkg.session;
@@ -244,7 +256,7 @@ public class NetCore
                 RpcReqHandler rpcReqHandler = NetReceiver.GetHandler(tag);
                 if (rpcReqHandler != null)
                 {
-                    SprotoTypeBase rpcRsp = rpcReqHandler(protocol.GenRequest(tag, data, offset));
+                    SprotoTypeBase rpcRsp = rpcReqHandler(protocol.GenRequest(tag, unpackedData, offset));
                     if (pkg.HasSession)
                     {
                         Send(rpcRsp, session, tag);
@@ -258,7 +270,7 @@ public class NetCore
                 {
                     ProtocolFunctionDictionary.typeFunc GenResponse;
                     sessionDict.TryGetValue(session, out GenResponse);
-                    rpcRspHandler(GenResponse(data, offset));
+                    rpcRspHandler(GenResponse(unpackedData, offset));
                 }
             }
         }
