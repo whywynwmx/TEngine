@@ -181,9 +181,18 @@ namespace GameLogic {
             Debug.Log("Sending heartbeat...");
 
             // 这里可以发送实际的心跳包
-            // 例如: NetCore.Send<HeartbeatRequest>();
-            C2sSprotoType.cs_send_heart_beat request = new C2sSprotoType.cs_send_heart_beat();
-            NetSender.Send<C2sSprotoType.cs_send_heart_beat>(request);
+            try
+            {
+                C2sSprotoType.cs_send_heart_beat.request request = new C2sSprotoType.cs_send_heart_beat.request();
+                NetSender.Send<C2sSprotoType.cs_send_heart_beat>(request, (rsp) =>
+                {
+                    Debug.Log("Heartbeat acknowledged by server");
+                });
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning($"Failed to send heartbeat: {e.Message}");
+            }
         }
 
         public void OnUpdate()
