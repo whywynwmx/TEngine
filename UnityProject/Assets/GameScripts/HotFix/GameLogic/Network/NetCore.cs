@@ -18,7 +18,7 @@ public class NetCore
 
     public static bool logined;
 
-    private static int CONNECT_TIMEOUT = 3000;
+    private static int CONNECT_TIMEOUT = 10000;
     private static CancellationTokenSource cancellationTokenSource;
     private static CancellationTokenSource receiveCancellationTokenSource;
 
@@ -134,17 +134,18 @@ public class NetCore
         }
 
         sendStream.Seek(0, SeekOrigin.Begin);
-        sendStream.WriteByte((byte)(data.Length >> 8));
-        sendStream.WriteByte((byte)data.Length);
+        //sendStream.WriteByte((byte)(data.Length >> 8));
+        //sendStream.WriteByte((byte)data.Length);
         sendStream.Write(data, 0, data.Length);
 
         try {
             var dataToSend = new byte[sendStream.Position];
             Array.Copy(sendStream.Buffer, dataToSend, sendStream.Position);
-            webSocket.SendAsync(new ArraySegment<byte>(dataToSend), WebSocketMessageType.Binary, true, cancellationTokenSource.Token);
+            // 使用CancellationToken.None，避免被连接超时取消
+            webSocket.SendAsync(new ArraySegment<byte>(dataToSend), WebSocketMessageType.Binary, true, CancellationToken.None);
         }
         catch (Exception e) {
-            Debug.LogWarning(e.ToString());
+            Debug.LogWarning($"Send error: {e.Message}");
         }
     }
 
