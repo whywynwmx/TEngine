@@ -30,6 +30,9 @@ public partial class GameApp
         Log.Warning("======= Entrance GameApp =======");
         Utility.Unity.AddDestroyListener(Release);
         Log.Warning("======= StartGameLogic =======");
+
+        GameModule.InitToEnterGame();
+
         StartGameLogic();
     }
     

@@ -23,3 +23,4 @@ UnityProject/ProjectSettings/BurstAotSettings_StandaloneWindows.json
 /BuildCLI/build.log
 /UnityProject/Assets/AssetRaw/DLL
 /UnityProject/Assets/AssetRaw/Configs/bytes
+.claude/settings.local.json

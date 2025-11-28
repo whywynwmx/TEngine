@@ -93,6 +93,10 @@ public class GameModule
 
     private static NetModule _net;
     
+    public static GameServerModule GameServer => _gameServer ??= GameServerModule.Instance;
+
+    private static GameServerModule _gameServer;
+
     /// <summary>
     /// 获取游戏框架模块类。
     /// </summary>
@@ -121,5 +125,11 @@ public class GameModule
         _scene = null;
         _timer = null;
         _localization = null;
+    }
+
+    public static void InitToEnterGame()
+    {
+        _net = NetModule.Instance;
+        _gameServer = GameServerModule.Instance;
     }
 }

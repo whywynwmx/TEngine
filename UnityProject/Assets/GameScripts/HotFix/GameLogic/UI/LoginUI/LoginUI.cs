@@ -43,7 +43,7 @@ namespace GameLogic
 				request.platformuid = "Windows PC";
 				request.shareQuery = "";
 				request.wxuserinfo = "";
-                NetSender.Send<C2sProtocol.checkAccount>(request, (rsp) =>
+                GameModule.Net.Send<C2sProtocol.checkAccount>(request, (rsp) =>
 				{
 					Debug.Log("Login response received");
 					if (rsp != null)

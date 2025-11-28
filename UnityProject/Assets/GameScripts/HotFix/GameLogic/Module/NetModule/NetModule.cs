@@ -1,3 +1,4 @@
+using Sproto;
 using System;
 using System.Collections;
 using System.Net.Sockets;
@@ -286,5 +287,14 @@ namespace GameLogic {
         public bool IsReconnecting => isReconnecting;
         public int ReconnectAttempts => currentReconnectAttempts;
         public bool IsConnected => NetCore.connected;
+
+        public void Send<T>(SprotoTypeBase rpcReq = null, RpcRspHandler rpcRspHandler = null)
+        {
+            NetSender.Send<T>(rpcReq, rpcRspHandler);
+        }
+        public int RegNetMsg<T>(RpcReqHandler rpcReqHandler)
+        {
+            return NetReceiver.AddHandler<T>(rpcReqHandler);
+        }
     }
 }
