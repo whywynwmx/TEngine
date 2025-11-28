@@ -247,7 +247,7 @@ public class NetCore
                 RpcReqHandler rpcReqHandler = NetReceiver.GetHandler(tag);
                 if (rpcReqHandler != null)
                 {
-                    SprotoTypeBase rpcRsp = rpcReqHandler(protocol.GenRequest(tag, unpackedData, offset));
+                    SprotoTypeBase rpcRsp = rpcReqHandler(NetReceiver.GenRequest(tag, unpackedData, offset));
                     if (pkg.HasSession)
                     {
                         Send(rpcRsp, session, tag);
