@@ -37,9 +37,6 @@ public class NetCore
 
     public static void Init()
     {
-        recvStream.Write(receiveBuffer, 0, receiveBuffer.Length);
-        recvStream.Seek(0, SeekOrigin.Begin);
-
         sessionDict = new Dictionary<long, ProtocolFunctionDictionary.typeFunc>();
     }
 
@@ -149,7 +146,6 @@ public class NetCore
         }
     }
 
-    private static int receivePosition;
     public static async void Receive()
     {
         if (!connected)
@@ -223,48 +219,13 @@ public class NetCore
 
     private static void ProcessReceivedData(byte[] buffer, int count)
     {
-        int bufferPos = 0;
-
-        while (bufferPos < count)
+        // WebSocket已经处理了分帧，直接使用接收到的数据
+        if (count > 0)
         {
-            int copyLength = Math.Min(count - bufferPos, recvStream.Buffer.Length - receivePosition);
-            if (copyLength > 0)
-            {
-                recvStream.Seek(receivePosition, SeekOrigin.Begin);
-                recvStream.Write(buffer, bufferPos, copyLength);
-                receivePosition += copyLength;
-                bufferPos += copyLength;
-            }
-
-            int i = 0;
-            while (receivePosition >= i + 2)
-            {
-                int length = (recvStream[i] << 8) | recvStream[i+1];
-
-                int sz = length + 2;
-                if (receivePosition < i + sz)
-                {
-                    break;
-                }
-
-                recvStream.Seek(i + 2, SeekOrigin.Begin);
-
-                if (length > 0)
-                {
-                    byte[] data = new byte[length];
-                    recvStream.Read(data, 0, length);
-                    recvQueue.Enqueue(data);  // 无锁操作
-                }
-
-                i += sz;
-            }
-
-            if (i > 0)
-            {
-                recvStream.Seek(0, SeekOrigin.Begin);
-                recvStream.MoveUp(i, receivePosition - i);
-                receivePosition -= i;
-            }
+            byte[] data = new byte[count];
+            Array.Copy(buffer, data, count);
+            recvQueue.Enqueue(data);
+            Debug.Log($"WebSocket data processed: {count} bytes enqueued");
         }
     }
 
