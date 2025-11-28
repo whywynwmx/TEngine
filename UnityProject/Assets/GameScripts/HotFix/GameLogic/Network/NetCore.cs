@@ -21,6 +21,7 @@ public class NetCore
 
     private static int CONNECT_TIMEOUT = 3000;
     private static CancellationTokenSource cancellationTokenSource;
+    private static CancellationTokenSource receiveCancellationTokenSource;
 
     private static ConcurrentQueue<byte[]> recvQueue = new ConcurrentQueue<byte[]>();
 
@@ -54,6 +55,9 @@ public class NetCore
             cancellationTokenSource = new CancellationTokenSource();
             cancellationTokenSource.CancelAfter(CONNECT_TIMEOUT);
 
+            // 为接收操作创建独立的、不超时的CancellationToken
+            receiveCancellationTokenSource = new CancellationTokenSource();
+
             string uri = $"{protocol}://{host}:{port}";
             await webSocket.ConnectAsync(new Uri(uri), cancellationTokenSource.Token);
 
@@ -80,6 +84,7 @@ public class NetCore
         if (connected)
         {
             cancellationTokenSource?.Cancel();
+            receiveCancellationTokenSource?.Cancel();
             webSocket?.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing", CancellationToken.None);
             webSocket?.Dispose();
             webSocket = null;
@@ -155,16 +160,52 @@ public class NetCore
 
         try
         {
-            while (connected && !cancellationTokenSource.Token.IsCancellationRequested)
+            while (connected && !receiveCancellationTokenSource.Token.IsCancellationRequested)
             {
-                var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(receiveBuffer), cancellationTokenSource.Token);
+                try
+                {
+                    var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(receiveBuffer), receiveCancellationTokenSource.Token);
 
-                if (result.MessageType == WebSocketMessageType.Binary && result.Count > 0)
-                {
-                    ProcessReceivedData(receiveBuffer, result.Count);
+                    if (result.MessageType == WebSocketMessageType.Binary && result.Count > 0)
+                    {
+                        Debug.Log($"Processing {result.Count} bytes of binary data");
+                        ProcessReceivedData(receiveBuffer, result.Count);
+                    }
+                    else if (result.MessageType == WebSocketMessageType.Close)
+                    {
+                        Debug.LogWarning($"WebSocket close received. Status: {result.CloseStatus}, Description: {result.CloseStatusDescription}");
+                        Disconnect();
+                        break;
+                    }
                 }
-                else if (result.MessageType == WebSocketMessageType.Close)
+                catch (WebSocketException wsEx)
                 {
+                    Debug.LogWarning($"WebSocket exception: {wsEx.Message}");
+                    Debug.LogWarning("WebSocket connection lost, disconnecting...");
+                    Disconnect();
+                    break;
+                }
+                catch (OperationCanceledException ex)
+                {
+                    Debug.LogWarning($"WebSocket receive operation was cancelled: {ex.Message}");
+                    // 检查是否是连接超时导致的取消
+                    if (cancellationTokenSource.Token.IsCancellationRequested)
+                    {
+                        Debug.LogWarning("Cancellation was due to connection timeout, stopping receive loop");
+                        break;
+                    }
+                    // 检查是否是接收取消
+                    if (receiveCancellationTokenSource.Token.IsCancellationRequested)
+                    {
+                        Debug.LogWarning("Receive operation was cancelled manually, stopping receive loop");
+                        break;
+                    }
+                    Debug.LogWarning("Unexpected cancellation, continuing...");
+                    continue;
+                }
+                catch (ObjectDisposedException)
+                {
+                    Debug.LogWarning("WebSocket was disposed, connection closed");
                     Disconnect();
                     break;
                 }
@@ -172,7 +213,12 @@ public class NetCore
         }
         catch (Exception e)
         {
-            Debug.LogWarning($"Receive error: {e.ToString()}");
+            Debug.LogWarning($"Receive loop error: {e.Message}");
+            Debug.LogWarning($"WebSocket State: {webSocket?.State}");
+        }
+        finally
+        {
+            Debug.Log("WebSocket receive loop ended");
         }
     }
 

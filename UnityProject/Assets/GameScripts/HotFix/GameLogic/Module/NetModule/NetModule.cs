@@ -200,17 +200,17 @@ namespace GameLogic {
             NetCore.Dispatch();
 
             // 更新重连协程
-            UpdateReconnectCoroutine();
+            // UpdateReconnectCoroutine();
 
-            // 更新心跳协程
-            UpdateHeartbeatCoroutine();
+            // // 更新心跳协程
+            // UpdateHeartbeatCoroutine();
 
-            // 定期检查连接状态
-            if (Time.time - lastConnectionCheckTime > 1f)
-            {
-                lastConnectionCheckTime = Time.time;
-                CheckConnectionStatus();
-            }
+            // // 定期检查连接状态
+            // if (Time.time - lastConnectionCheckTime > 1f)
+            // {
+            //     lastConnectionCheckTime = Time.time;
+            //     CheckConnectionStatus();
+            // }
         }
 
         private void CheckConnectionStatus()
