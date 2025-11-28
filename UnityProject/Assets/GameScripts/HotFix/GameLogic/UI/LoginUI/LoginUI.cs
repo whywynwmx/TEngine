@@ -35,25 +35,39 @@ namespace GameLogic
 
 		private void OnClickLoginBtn()
         {
-            Log.Info($"点击登录按钮：");
-            GameModule.Net.Connect(
-				"10.0.0.119",
-				5204,
-                // "192.168.136.130",
-                // 5001,
-                "ws",
-                () => { 
-					Log.Info("连接服务器成功");
-                   C2sSprotoType.checkAccount.request request = new C2sSprotoType.checkAccount.request();
-					request.accountname = "just";
-					request.token = "test";
-                   NetSender.Send<C2sSprotoType.checkAccount>(request, (rsp) =>
-                   {
-                       Debug.Log("Heartbeat acknowledged by server");
-                   });
-                },
-                () => { Log.Info("连接服务器失败"); }
-            );
+			if (GameModule.Net.IsConnected)
+			{		
+				C2sSprotoType.checkAccount.request request = new C2sSprotoType.checkAccount.request();
+				request.token = "93";
+				request.lid = "93";
+				request.platformuid = "Windows PC";
+				request.shareQuery = "";
+				request.wxuserinfo = "";
+                NetSender.Send<C2sProtocol.checkAccount>(request, (rsp) =>
+				{
+					Debug.Log("Login response received");
+					if (rsp != null)
+					{
+						Debug.Log($"Login successful: {rsp}");
+					}
+				});
+				return;
+			}
+			else
+            {
+            	Log.Info($"点击登录按钮：");
+				GameModule.Net.Connect(
+					 //"10.0.0.119",
+					 //5204,
+					 "192.168.136.130",
+					 5001,
+					"ws",
+					() => { 
+						Log.Info("连接服务器成功");
+					},
+					() => { Log.Info("连接服务器失败"); }
+				);   
+            }
         }
 
 		#endregion
