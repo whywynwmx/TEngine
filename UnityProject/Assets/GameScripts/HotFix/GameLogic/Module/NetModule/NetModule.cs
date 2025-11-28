@@ -6,6 +6,9 @@ using UnityEngine;
 namespace GameLogic {
     public class NetModule : Singleton<NetModule>, IUpdate
     {
+        private C2sProtocol C2sProtocol;  // 触发协议注册
+        private S2cProtocol S2cProtoco;     // 游戏协议
+
         private string currentHost;
         private int currentPort;
         private string currentProtocol;
@@ -42,6 +45,20 @@ namespace GameLogic {
         protected override void OnInit()
         {
             currentReconnectDelay = initialReconnectDelay;
+
+            // 初始化Sproto协议
+            Debug.Log("Initializing Sproto protocols...");
+            C2sProtocol = C2sProtocol.Instance;
+            S2cProtoco = S2cProtocol.Instance;
+
+            // 初始化网络模块
+            Debug.Log("Initializing network module...");
+
+            NetCore.Init();
+            NetSender.Init();
+            NetReceiver.Init();
+
+            Debug.Log("Network module initialized successfully");
         }
 
         protected override void OnRelease()
@@ -84,6 +101,10 @@ namespace GameLogic {
             // 启动心跳检测
             isHeartbeatCoroutineRunning = true;
             heartbeatTimer = 0f;
+
+            // 立即发送心跳包，避免服务端超时
+            Debug.Log("Sending immediate heartbeat to prevent server timeout...");
+            SendHeartbeat();
 
             onConnectedCallback?.Invoke();
 
