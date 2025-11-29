@@ -35,14 +35,16 @@ namespace GameLogic
 
 		private void OnClickLoginBtn()
         {
+			string account = m_inputAccount.text;
+
 			if (GameModule.Net.IsConnected)
 			{		
 				C2sSprotoType.checkAccount.request request = new C2sSprotoType.checkAccount.request();
-				request.token = "93";
-				request.lid = "93";
-				request.platformuid = "Windows PC";
-				request.shareQuery = "";
-				request.wxuserinfo = "";
+				request.token = account;
+				request.lid = account;
+				request.platformuid = "";
+				// request.shareQuery = "";
+				// request.wxuserinfo = "";
                 GameModule.Net.Send<C2sProtocol.checkAccount>(request, (rsp) =>
 				{
 					Debug.Log("Login response received");

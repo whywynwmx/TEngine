@@ -1,5 +1,6 @@
 ﻿using GameLogic;
 using TEngine;
+using UnityEngine.Rendering;
 using Object = UnityEngine.Object;
 
 public class GameModule
@@ -97,6 +98,12 @@ public class GameModule
 
     private static GameServerModule _gameServer;
 
+    public static ActorModule Actor => _actor ??= ActorModule.Instance;
+    private static ActorModule _actor;
+
+    public static EliminateModule Eliminate => _eliminate ??= EliminateModule.Instance;
+    private static EliminateModule _eliminate;
+
     /// <summary>
     /// 获取游戏框架模块类。
     /// </summary>
@@ -131,5 +138,7 @@ public class GameModule
     {
         _net = NetModule.Instance;
         _gameServer = GameServerModule.Instance;
+        _actor = ActorModule.Instance;
+        _eliminate = EliminateModule.Instance;
     }
 }
